@@ -1,0 +1,54 @@
+name: Build Midnight Chess APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Extract project
+        id: project
+        run: |
+          mkdir extracted
+          unzip -o "midnight-chess -novo.zip.zip" -d extracted
+          PROJECT_DIR=$(find extracted -type f -name package.json -not -path '*/node_modules/*' -print -quit | xargs dirname)
+          test -n "$PROJECT_DIR"
+          echo "dir=$PROJECT_DIR" >> "$GITHUB_OUTPUT"
+
+      - name: Install and build APK
+        working-directory: .
+        run: |
+          cd "${{ steps.project.outputs.dir }}"
+          npm install
+          npm run apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: midnight-chess-apk
+          path: extracted/**/android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
