@@ -1,0 +1,7 @@
+{
+  "appId": "app.midnightchess",
+  "appName": "Midnight Chess",
+  "webDir": "dist",
+  "backgroundColor": "#0b1014",
+  "android": { "backgroundColor": "#0b1014" }
+}
